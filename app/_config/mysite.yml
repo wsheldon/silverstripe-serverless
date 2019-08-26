@@ -1,0 +1,7 @@
+---
+Name: myproject
+---
+SilverStripe\Core\Manifest\ModuleManifest:
+  project: app
+SilverStripe\Control\Director:
+  alternate_base_url: '`SS_BASE_URL`'

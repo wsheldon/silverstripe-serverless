@@ -1,0 +1,116 @@
+service: app
+
+provider:
+    name: aws
+    region: us-east-1
+    runtime: provided
+    environment:
+      AWS_BUCKET_NAME: 'wilsonsheldon.name'
+      SS_BASE_URL: 'https://wilsonsheldon.name'
+      TEMP_FOLDER: '/tmp'
+      SS_ENVIRONMENT_TYPE: 'live'
+      SS_FLUSH_ON_DEPLOY: 'true'
+      SS_IGNORE_DOT_ENV: 'true'
+
+plugins:
+    - ./vendor/bref/bref
+    - serverless-pseudo-parameters
+
+functions:
+    api:
+        handler: public/index.php
+        description: ''
+        timeout: 30 # in seconds (API Gateway has a timeout of 30 seconds)
+        layers:
+            - ${bref:layer.php-73-fpm}
+        events:
+            -   http: 'ANY /'
+            -   http: 'ANY /{proxy+}'
+
+resources:
+  Resources:
+    # The S3 bucket that stores the assets
+    Assets:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: 'wilsonsheldon.name'
+      # The policy that makes the bucket publicly readable
+    AssetsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref Assets # References the bucket we defined above
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: '*' # everyone
+              Action: 's3:GetObject' # to read
+              Resource: 'arn:aws:s3:::wilsonsheldon.name/*' # things in the bucket
+    WebsiteCDN:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          # Cheapest option by default (https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html)
+          PriceClass: PriceClass_100
+          # Enable http2 transfer for better performances
+          HttpVersion: http2
+          # Origins are where CloudFront fetches content
+          Aliases:
+            - 'wilsonsheldon.name' # e.g. example.com
+          ViewerCertificate:
+            # ARN of the certificate created in ACM
+            AcmCertificateArn: 'arn:aws:acm:us-east-1:494519901673:certificate/652f8785-f33b-46ba-9525-5f1e152f9a35'
+            # See https://docs.aws.amazon.com/fr_fr/cloudfront/latest/APIReference/API_ViewerCertificate.html
+            SslSupportMethod: 'sni-only'
+            MinimumProtocolVersion: TLSv1.1_2016
+          Origins:
+            # The website (AWS Lambda)
+            -   Id: Website
+                DomainName: '#{ApiGatewayRestApi}.execute-api.#{AWS::Region}.amazonaws.com'
+                OriginPath: '/dev'
+                CustomOriginConfig:
+                  OriginProtocolPolicy: 'https-only' # API Gateway only supports HTTPS
+            # The assets (S3)
+            -   Id: Assets
+              # Use s3-website URLs instead if you host a static website (https://stackoverflow.com/questions/15309113/amazon-cloudfront-doesnt-respect-my-s3-website-buckets-index-html-rules#15528757)
+                DomainName: '#{Assets}.s3.amazonaws.com'
+                CustomOriginConfig:
+                  OriginProtocolPolicy: 'http-only' # S3 websites only support HTTP
+          # The default behavior is to send everything to AWS Lambda
+          DefaultCacheBehavior:
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            TargetOriginId: Website # the PHP application
+            # Disable caching for the PHP application https://aws.amazon.com/premiumsupport/knowledge-center/prevent-cloudfront-from-caching-files/
+            DefaultTTL: 0
+            MinTTL: 0
+            MaxTTL: 0
+            # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-forwardedvalues.html
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: all # Forward cookies to use them in PHP
+              # We must *not* forward the `Host` header else it messes up API Gateway
+              Headers:
+                - 'Accept'
+                - 'Accept-Language'
+                - 'Origin'
+                - 'Referer'
+            ViewerProtocolPolicy: redirect-to-https
+          CacheBehaviors:
+            # Assets will be served under the `/assets/` prefix
+            -   PathPattern: '_resources/*'
+                TargetOriginId: Assets # the static files on S3
+                AllowedMethods: [GET, HEAD]
+                ForwardedValues:
+                  # No need for all that with assets
+                  QueryString: 'false'
+                  Cookies:
+                    Forward: none
+                ViewerProtocolPolicy: redirect-to-https
+                Compress: true # Serve files with gzip for browsers that support it (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html)
+          CustomErrorResponses:
+            # Do not cache HTTP errors
+            -   ErrorCode: 500
+                ErrorCachingMinTTL: 0
+            -   ErrorCode: 504
+                ErrorCachingMinTTL: 0
