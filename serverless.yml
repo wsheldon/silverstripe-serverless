@@ -8,7 +8,6 @@ provider:
       AWS_BUCKET_NAME: 'wilsonsheldon.name'
       SS_BASE_URL: 'https://wilsonsheldon.name'
       TEMP_FOLDER: '/tmp'
-      SS_ENVIRONMENT_TYPE: 'live'
       SS_FLUSH_ON_DEPLOY: 'true'
       SS_IGNORE_DOT_ENV: 'true'
 
@@ -34,7 +33,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: 'wilsonsheldon.name'
-      # The policy that makes the bucket publicly readable
+    # The policy that makes the bucket publicly readable
     AssetsBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:

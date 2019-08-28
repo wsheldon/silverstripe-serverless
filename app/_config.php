@@ -1,5 +1,12 @@
 <?php
 
+use SilverStripe\HybridSessions\HybridSession;
+use SilverStripe\Control\Director;
+
+define('AWS_REGION', 'us-east-1');
+define('AWS_BUCKET_NAME', 'wilsonsheldon.name');
+define('SS_SESSION_KEY', 'adsfadsfasdfasdfasdf');
+
 global $databaseConfig;
 $databaseConfig = [
     "type" => "MySQLDatabase",
@@ -9,3 +16,7 @@ $databaseConfig = [
     "database" => 'breftest',
 
 ];
+Director::isLive();
+
+HybridSession::init(SS_SESSION_KEY);
+
