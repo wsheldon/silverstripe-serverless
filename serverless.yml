@@ -1,15 +1,20 @@
 service: wilsonsheldon
 
+custom:
+  domain: 'wilsonsheldon.name'
+  apigwBinary:
+    types: #list of mime-types
+      - 'multipart/form-data'
+
 provider:
     name: aws
     region: us-east-1
     runtime: provided
     environment:
-      domain: 'wilsonsheldon.name'
-      AWS_BUCKET_NAME: ${self:provider.environment.domain}
+      AWS_BUCKET_NAME: ${self:custom.domain}
       AWS_REGION_HOLDER: ${self:provider.region}
-      SS_ENVIRONMENT_TYPE: live
-      SS_BASE_URL: https://${self:provider.environment.domain}
+      SS_ENVIRONMENT_TYPE: dev
+      SS_BASE_URL: https://${self:custom.domain}
       SS_FLUSH_ON_DEPLOY: true
       SS_IGNORE_DOT_ENV: true
       SS_SESSION_KEY: 5nko0NFw3U0sa0t
@@ -21,6 +26,7 @@ provider:
 plugins:
     - ./vendor/bref/bref
     - serverless-pseudo-parameters
+    - serverless-apigw-binary
 
 functions:
     api:
@@ -46,7 +52,7 @@ resources:
     Assets:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.domain}
+        BucketName: ${self:custom.domain}
     # The policy that makes the bucket publicly readable
     AssetsBucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -57,7 +63,7 @@ resources:
             - Effect: Allow
               Principal: '*' # everyone
               Action: 's3:GetObject' # to read
-              Resource: arn:aws:s3:::${self:provider.environment.domain}/* # things in the bucket
+              Resource: arn:aws:s3:::${self:custom.domain}/* # things in the bucket
     WebsiteCDN:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -69,7 +75,7 @@ resources:
           HttpVersion: http2
           # Origins are where CloudFront fetches content
           Aliases:
-            - ${self:provider.environment.domain} # e.g. example.com
+            - ${self:custom.domain} # e.g. example.com
           ViewerCertificate:
             # ARN of the certificate created in ACM
             AcmCertificateArn: 'arn:aws:acm:us-east-1:494519901673:certificate/652f8785-f33b-46ba-9525-5f1e152f9a35'

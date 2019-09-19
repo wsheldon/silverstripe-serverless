@@ -1,0 +1,15 @@
+version: 0.1
+phases:
+  install:
+    commands:
+      - npm install
+      - npm install -g serverless
+  #  pre_build:
+  #    commands:
+  #      - command
+  build:
+    commands:
+      - . ./build.sh
+#  post_build:
+#    commands:
+#      - . ./test.sh
