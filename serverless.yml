@@ -1,15 +1,22 @@
-service: app
+service: wilsonsheldon
 
 provider:
     name: aws
     region: us-east-1
     runtime: provided
     environment:
-      AWS_BUCKET_NAME: 'wilsonsheldon.name'
-      SS_BASE_URL: 'https://wilsonsheldon.name'
-      TEMP_FOLDER: '/tmp'
-      SS_FLUSH_ON_DEPLOY: 'true'
-      SS_IGNORE_DOT_ENV: 'true'
+      domain: 'wilsonsheldon.name'
+      AWS_BUCKET_NAME: ${self:provider.environment.domain}
+      AWS_REGION_HOLDER: ${self:provider.region}
+      SS_ENVIRONMENT_TYPE: live
+      SS_BASE_URL: https://${self:provider.environment.domain}
+      SS_FLUSH_ON_DEPLOY: true
+      SS_IGNORE_DOT_ENV: true
+      SS_SESSION_KEY: 5nko0NFw3U0sa0t
+      SS_DATABASE_NAME: breftest
+      SS_DATABASE_PASSWORD: admin123
+      SS_DATABASE_SERVER: wilsontest.cyzgvcttarhk.us-east-1.rds.amazonaws.com
+      SS_DATABASE_USERNAME: admin
 
 plugins:
     - ./vendor/bref/bref
@@ -19,12 +26,19 @@ functions:
     api:
         handler: public/index.php
         description: ''
-        timeout: 30 # in seconds (API Gateway has a timeout of 30 seconds)
+        timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
         layers:
             - ${bref:layer.php-73-fpm}
         events:
             -   http: 'ANY /'
             -   http: 'ANY /{proxy+}'
+
+package:
+  exclude:
+    - public/assets/**
+    - public/_resources/**
+    - .git/**
+    - node_modules/**
 
 resources:
   Resources:
@@ -32,7 +46,7 @@ resources:
     Assets:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: 'wilsonsheldon.name'
+        BucketName: ${self:provider.environment.domain}
     # The policy that makes the bucket publicly readable
     AssetsBucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -43,7 +57,7 @@ resources:
             - Effect: Allow
               Principal: '*' # everyone
               Action: 's3:GetObject' # to read
-              Resource: 'arn:aws:s3:::wilsonsheldon.name/*' # things in the bucket
+              Resource: arn:aws:s3:::${self:provider.environment.domain}/* # things in the bucket
     WebsiteCDN:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -55,7 +69,7 @@ resources:
           HttpVersion: http2
           # Origins are where CloudFront fetches content
           Aliases:
-            - 'wilsonsheldon.name' # e.g. example.com
+            - ${self:provider.environment.domain} # e.g. example.com
           ViewerCertificate:
             # ARN of the certificate created in ACM
             AcmCertificateArn: 'arn:aws:acm:us-east-1:494519901673:certificate/652f8785-f33b-46ba-9525-5f1e152f9a35'
@@ -98,6 +112,26 @@ resources:
           CacheBehaviors:
             # Assets will be served under the `/assets/` prefix
             -   PathPattern: '_resources/*'
+                TargetOriginId: Assets # the static files on S3
+                AllowedMethods: [GET, HEAD]
+                ForwardedValues:
+                  # No need for all that with assets
+                  QueryString: 'false'
+                  Cookies:
+                    Forward: none
+                ViewerProtocolPolicy: redirect-to-https
+                Compress: true # Serve files with gzip for browsers that support it (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html)
+            -   PathPattern: 'assets/*'
+                TargetOriginId: Assets # the static files on S3
+                AllowedMethods: [GET, HEAD]
+                ForwardedValues:
+                  # No need for all that with assets
+                  QueryString: 'false'
+                  Cookies:
+                    Forward: none
+                ViewerProtocolPolicy: redirect-to-https
+                Compress: true # Serve files with gzip for browsers that support it (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html)
+            -   PathPattern: 'themes/*'
                 TargetOriginId: Assets # the static files on S3
                 AllowedMethods: [GET, HEAD]
                 ForwardedValues:

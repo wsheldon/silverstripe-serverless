@@ -5,24 +5,3 @@ SilverStripe\Core\Manifest\ModuleManifest:
   project: app
 SilverStripe\Control\Director:
   alternate_base_url: '`SS_BASE_URL`'
----
-Name: myappsessionstores
-After: sessionstores
----
-SilverStripe\HybridSessions\HybridSession:
-  SilverStripe\HybridSessions\Crypto\CryptoHandler:
-    class: MyCustomCryptoHandler
----
-After:
-  - '#corecache'
----
-SilverStripe\Core\Injector\Injector:
-  MemcachedClient:
-    class: 'Memcached'
-    calls:
-      - [ addServer, [ 'breftest.srr0gl.cfg.use1.cache.amazonaws.com', 11211 ] ]
-  MemcachedCacheFactory:
-    class: 'SilverStripe\Core\Cache\MemcachedCacheFactory'
-    constructor:
-      client: '%$MemcachedClient'
-  SilverStripe\Core\Cache\CacheFactory: '%$MemcachedCacheFactory'

@@ -1,10 +1,10 @@
 <?php
 
-//phpinfo(); exit;
-
 use SilverStripe\Control\HTTPApplication;
 use SilverStripe\Control\HTTPRequestBuilder;
 use SilverStripe\Core\CoreKernel;
+
+define('ASSETS_PATH', '/tmp');
 
 // Find autoload.php
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
