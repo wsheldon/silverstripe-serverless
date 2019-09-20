@@ -68,6 +68,8 @@ define('ASSETS_PATH', '/tmp');
 
 I have a TODO to see if there's a better way.
 
+Also note, future deployments will use Git branch to set API Gateway stage, so dev/prod or develop/master, etc.
+
 ## TODO / Roadmap ##
 
 * Research better way to define ASSETS_PATH
