@@ -1,6 +1,8 @@
 version: 0.1
 phases:
   install:
+    runtime-versions:
+      php: 7.3
     commands:
       - npm install
       - npm install -g serverless
