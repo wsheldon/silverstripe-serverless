@@ -1,28 +1,84 @@
 ## Overview
 
-Base project folder for a SilverStripe ([http://silverstripe.org](http://silverstripe.org)) installation. Required modules are installed via [http://github.com/silverstripe/recipe-cms](http://github.com/silverstripe/recipe-cms). For information on how to change the dependencies in a recipe, please have a look at [https://github.com/silverstripe/recipe-plugin](https://github.com/silverstripe/recipe-plugin). In addition, installer includes [theme/simple](https://github.com/silverstripe-themes/silverstripe-simple) as a default theme.
+This is my proof of concept running SilverStripe 4 on AWS Serverless stack.  
+
+## Requirements ##
+
+* AWS Account
+* Create and set AWS Access Key/Secret in ~/.aws/credentials
+* Choose domain, i.e. wilsonsheldon.name
+* Purchase/Import SSL cert in AWS Certificate Manager
+* Setup RDS MySQL DB.  I choose free tier, db.t2.micro.  For now, you'll need to go into the security group and open port 3306 up to the world.  RDS lives inside your default VPC, whereas Lambda does not, by default.  I have a TODO to tighten this up.
+* Ensure PHP / Composer installed locally
+* [Serverless](https://serverless.com)
+* [NPM](https://www.npmjs.com/get-npm)
 
 ## Installation ##
 
-See [installation on different platforms](http://doc.silverstripe.org/framework/en/installation/),
-and [installation from source](http://doc.silverstripe.org/framework/en/installation/from-source).
+Step 1. Clone or download Code
+```sh
+git clone https://github.com/wsheldon/silverstripe-serverless.git
+cd silverstripe-serverless
+composer install
+```
 
-## Bugtracker ##
+Step 2.  Choose domain name and set service and domain in serverless.yml, i.e.
+```sh
+service: wilsonsheldon
 
-Bugs are tracked on github.com ([framework issues](https://github.com/silverstripe/silverstripe-framework/issues),
-[cms issues](https://github.com/silverstripe/silverstripe-cms/issues)).
-Please read our [issue reporting guidelines](https://docs.silverstripe.org/en/4/contributing/issues_and_bugs/).
+custom:
+  domain: 'wilsonsheldon.name'
+```
 
-## Development and Contribution ##
+Step 3.  Set SSL cert ARN on/around line 81 in serverless.yml, i.e
+```sh
+AcmCertificateArn: 'arn:aws:acm:us-east-1:YYYY:certificate/XXX'
+```
 
-If you would like to make changes to the SilverStripe core codebase, we have an extensive [guide to contributing code](http://doc.silverstripe.org/framework/en/misc/contributing/code).
+Step 4. Configure AWS Parameter Store.  Note, session key is any sufficiently indeterminable string according the docs.  For paramater, prefix I used the Serverless service name 'wilsonsheldon' for consistency.
+```sh
+aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_session_key'  --type String --value '##########';
+aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_database_name'  --type String --value '##########';
+aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_database_password'  --type String --value '##########';
+aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_database_server'  --type String --value '##########';
+aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_database_username'  --type String --value '##########';
+```
+
+Step 5. Serverless Deploy.  Not this will create the S3 bucket named same as your domain.  The first time you run this it will take 10-15 minutes while CDN is enabled.  
+```sh
+sls deploy
+```
+
+Step 6.  Hopefully Step 5 succeeded can now sync assets
+```sh
+composer vendor-expose copy
+aws s3 sync public/_resources s3://YOUR DOMAIN NAME/_resources
+```
+
+Step 7.  Because Lambda has no local storage but the CMS needs the TinyMCE config, we need to manually copy to S3.  The way I did this was to login to admin, see what the hash of the file was (even though it was throwing 404), take my local version, change the base URL and upload to S3, i.e mine was
+```sh
+assets/_tinymce/tinymce-cms-01d3d5719a.js
+```
+
+## Notes ##
+Note, the only change I made to SS default code was in public/index.php on line 7
+```sh
+define('ASSETS_PATH', '/tmp');
+```
+
+I have a TODO to see if there's a better way.
+
+## TODO / Roadmap ##
+
+* Research better way to define ASSETS_PATH
+* Research better way to get TinyMCE JS assets to S3
+* Setup SS Static Publishing and serve HTML directly from CloudFront.  This will improve performance and reduce number of Lambda executions.  In meantime, could set CloudFront to cache public pages for X minutes.
+* Setup SES for email sending
+* Finish CI/CD with CodePipeline/CodeBuild.  AWS CodeBuld PHP 7.3 runtime is currently missing PHP 'intl' extension so Composer won't run.
+* Explore running Lambda in VPC for greater security.
 
 ## Links ##
 
- * [Changelogs](http://doc.silverstripe.org/framework/en/changelogs/)
- * [Bugtracker: Framework](https://github.com/silverstripe/silverstripe-framework/issues)
- * [Bugtracker: CMS](https://github.com/silverstripe/silverstripe-cms/issues)
- * [Bugtracker: Installer](https://github.com/silverstripe/silverstripe-installer/issues)
- * [Forums](http://silverstripe.org/forums)
- * [Developer Mailinglist](https://groups.google.com/forum/#!forum/silverstripe-dev)
- * [License](./LICENSE)
+ * [SilverStripe](https://www.silverstripe.org)
+ * [SilverStripe Hybrid Sessions](https://github.com/silverstripe/silverstripe-hybridsessions)
+ * [Bref](https://bref.sh)

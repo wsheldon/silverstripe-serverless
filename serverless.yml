@@ -17,7 +17,7 @@ provider:
       SS_BASE_URL: https://${self:custom.domain}
       SS_FLUSH_ON_DEPLOY: true
       SS_IGNORE_DOT_ENV: true
-      SS_SESSION_KEY: ${ssm:/wilsonsheldon/my-ss_session_key}
+      SS_SESSION_KEY: ${ssm:/wilsonsheldon/ss_session_key}
       SS_DATABASE_NAME: ${ssm:/wilsonsheldon/ss_database_name}
       SS_DATABASE_PASSWORD: ${ssm:/wilsonsheldon/ss_database_password}
       SS_DATABASE_SERVER: ${ssm:/wilsonsheldon/ss_database_server}
