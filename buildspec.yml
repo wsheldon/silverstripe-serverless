@@ -1,9 +1,8 @@
 version: 0.2
-run-as: root
 phases:
   install:
     runtime-versions:
-      nodejs: 7.3
+      php: 7.3
     commands:
       - npm install
       - npm install -g serverless
