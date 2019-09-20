@@ -13,15 +13,15 @@ provider:
     environment:
       AWS_BUCKET_NAME: ${self:custom.domain}
       AWS_REGION_HOLDER: ${self:provider.region}
-      SS_ENVIRONMENT_TYPE: dev
+      SS_ENVIRONMENT_TYPE: live
       SS_BASE_URL: https://${self:custom.domain}
       SS_FLUSH_ON_DEPLOY: true
       SS_IGNORE_DOT_ENV: true
-      SS_SESSION_KEY: 5nko0NFw3U0sa0t
-      SS_DATABASE_NAME: breftest
-      SS_DATABASE_PASSWORD: admin123
-      SS_DATABASE_SERVER: wilsontest.cyzgvcttarhk.us-east-1.rds.amazonaws.com
-      SS_DATABASE_USERNAME: admin
+      SS_SESSION_KEY: ${ssm:/wilsonsheldon/my-ss_session_key}
+      SS_DATABASE_NAME: ${ssm:/wilsonsheldon/ss_database_name}
+      SS_DATABASE_PASSWORD: ${ssm:/wilsonsheldon/ss_database_password}
+      SS_DATABASE_SERVER: ${ssm:/wilsonsheldon/ss_database_server}
+      SS_DATABASE_USERNAME: ${ssm:/wilsonsheldon/ss_database_username}
 
 plugins:
     - ./vendor/bref/bref

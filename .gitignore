@@ -8,3 +8,4 @@
 /.idea
 /.serverless
 /node_modules/
+/deploy.out
