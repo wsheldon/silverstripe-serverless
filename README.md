@@ -13,6 +13,12 @@ This is my proof of concept running SilverStripe 4 on AWS Serverless stack.
 * [Serverless](https://serverless.com)
 * [NPM](https://www.npmjs.com/get-npm)
 
+## Demo ##
+
+* [Frontend](https://wilsonsheldon.name)
+* [Admin](https://wilsonsheldon.name/admin) admin@example.com / e4IHkuXItOW1Ykg
+
+
 ## Installation ##
 
 Step 1. Clone or download Code
