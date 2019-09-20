@@ -3,16 +3,8 @@ run-as: root
 phases:
   install:
     runtime-versions:
-      nodejs: 8
+      nodejs: 7.3
     commands:
-      - rm -f /usr/local/bin/php*
-      - rm -f /usr/local/bin/phar*
-      - rm -f /usr/local/bin/pear*
-      - rm -f /usr/local/bin/pecl*
-      - apt-get update
-      - apt-get upgrade -y
-      - apt-get install -y php7.3-cli php7.3-zip
-      - phpenmod intl
       - npm install
       - npm install -g serverless
   #  pre_build:
