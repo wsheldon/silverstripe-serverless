@@ -81,7 +81,6 @@ Also note, future deployments will use Git branch to set API Gateway stage, so d
 * Research better way to define ASSETS_PATH
 * Research better way to get TinyMCE JS assets to S3
 * Setup SS Static Publishing and serve HTML directly from CloudFront.  This will improve performance and reduce number of Lambda executions.  In meantime, could set CloudFront to cache public pages for X minutes.
-* Setup SES for email sending
 * Finish CI/CD with CodePipeline/CodeBuild.  AWS CodeBuld PHP 7.3 runtime is currently missing PHP 'intl' extension so Composer won't run.
 * Explore running Lambda in VPC for greater security.
 
