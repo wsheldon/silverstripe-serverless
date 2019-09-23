@@ -1,6 +1,6 @@
 ## Overview
 
-This is my proof of concept running SilverStripe 4 on AWS Serverless stack.  
+This is my proof of concept running SilverStripe 4 on AWS Serverless stack using Bref.  
 
 ## Requirements ##
 
