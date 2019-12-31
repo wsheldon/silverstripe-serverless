@@ -13,12 +13,6 @@ This is my proof of concept running SilverStripe 4 on AWS Serverless stack using
 * [Serverless](https://serverless.com)
 * [NPM](https://www.npmjs.com/get-npm)
 
-## Demo ##
-
-* [Frontend](https://wilsonsheldon.name)
-* [Admin](https://wilsonsheldon.name/admin) admin@example.com / e4IHkuXItOW1Ykg
-
-
 ## Installation ##
 
 Step 1. Clone or download Code
@@ -50,7 +44,7 @@ aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_dat
 aws ssm put-parameter --region us-east-1 --name '/SERVERLESS SERVICE NAME/ss_database_username'  --type String --value '##########';
 ```
 
-Step 5. Serverless Deploy.  Not this will create the S3 bucket named same as your domain.  The first time you run this it will take 10-15 minutes while CDN is enabled.  
+Step 5. Serverless Deploy.  Note, this will create the S3 bucket named same as your domain.  The first time you run this it will take 10-15 minutes while CDN is enabled.  
 ```sh
 sls deploy
 ```
