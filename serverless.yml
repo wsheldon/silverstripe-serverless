@@ -22,6 +22,9 @@ provider:
       SS_DATABASE_PASSWORD: ${ssm:/wilsonsheldon/ss_database_password}
       SS_DATABASE_SERVER: ${ssm:/wilsonsheldon/ss_database_server}
       SS_DATABASE_USERNAME: ${ssm:/wilsonsheldon/ss_database_username}
+      APP_SMTP_SERVER: ${ssm:/wilsonsheldon/app_smtp_server}
+      APP_SMTP_USERNAME: ${ssm:/wilsonsheldon/app_smtp_username}
+      APP_SMTP_PASSWORD: ${ssm:/wilsonsheldon/app_smtp_password}
 
 plugins:
     - ./vendor/bref/bref
